@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "args":["--model_type", "roberta", "--task_name", "codesearch", "--do_train", "--do_eval", "--eval_all_checkpoints", "--train_file", "train.txt", "--dev_file", "valid.txt", "--max_seq_length", "200", "--per_gpu_train_batch_size", "32", "--per_gpu_eval_batch_size", "32", "--learning_rate", "1e-5", "--num_train_epochs", "8", "--gradient_accumulation_steps", "1", "--data_dir", "data/codesearch/train_valid/java", "--output_dir", "./models/java", "--model_name_or_path", "microsoft/codebert-base"],
+            "console": "integratedTerminal"
+        }
+    ]
+}

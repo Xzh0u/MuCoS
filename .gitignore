@@ -131,3 +131,7 @@ dmypy.json
 # data
 data/
 codesearch/models
+TEMP/
+runs/
+output/
+results/

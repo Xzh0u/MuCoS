@@ -84,7 +84,7 @@ class DataProcessor(object):
                 if len(line) != 5:
                     continue
                 lines.append(line)
-            return lines
+            return lines  # lines is a two dimension array
 
 
 class CodesearchProcessor(DataProcessor):
@@ -117,8 +117,8 @@ class CodesearchProcessor(DataProcessor):
         examples = []
         for (i, line) in enumerate(lines):
             guid = "%s-%s" % (set_type, i)
-            text_a = line[3]
-            text_b = line[4]
+            text_a = line[3]  # nl
+            text_b = line[4]  # code
             if (set_type == 'test'):
                 label = self.get_labels()[0]
             else:
