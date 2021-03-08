@@ -72,19 +72,27 @@ class CodesearchProcessor(DataProcessor):
             guid = "%s-%s" % (set_type, i)
             api = line[2]  # api
             code = line[4]  # code
+            desc = line[3]  # description
             name = guid + "-" + api
-            example.extend([name, code])
+            example.extend([name, code, desc])
             examples.append(example)
         return examples
 
 
 def main():
     processor = CodesearchProcessor()
-    args = processor.get_train_examples('TEMP/', 'train.txt')
+    args = processor.get_train_examples(
+        'data/codesearch/train_valid/java/', 'train.txt')
 
-    for item in args:
-        subprocess.run(
-            ["java", "-jar", "../tnpa-generalizability/JavaMethodTransformer/target/jar/JavaMethodTransformer.jar", item[0], item[1], "output/"])
+    print(len(args))  # how many functions: 908886
+
+    for idx, item in enumerate(args):
+        if idx < 10000:
+            print(item[2])
+
+    # for item in args:
+    #     subprocess.run(
+    #         ["java", "-jar", "../tnpa-generalizability/JavaMethodTransformer/target/jar/JavaMethodTransformer.jar", item[0], item[1], "output/"])
 
 
 if __name__ == '__main__':
