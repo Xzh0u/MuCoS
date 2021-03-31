@@ -264,9 +264,10 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
                           # XLM don't use segment_ids
                           'labels': batch[3]}
 
-                outputs = model(**inputs)
-                tmp_eval_loss, logits = outputs[:2]
-
+                # outputs = model(**inputs)
+                # tmp_eval_loss, logits = outputs[:2]
+                tmp_eval_loss, logits = model(**inputs)
+                
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
             if preds is None:

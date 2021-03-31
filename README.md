@@ -1,15 +1,17 @@
 # CodeBERT
-This repo provides the code for reproducing the experiments in [CodeBERT: A Pre-Trained Model for Programming and Natural Languages](https://arxiv.org/pdf/2002.08155.pdf). CodeBERT is a pre-trained model for programming language, which is a multi-programming-lingual model pre-trained on NL-PL pairs in 6 programming languages (Python, Java, JavaScript, PHP, Ruby, Go). 
+
+This repo provides the code for reproducing the experiments in [CodeBERT: A Pre-Trained Model for Programming and Natural Languages](https://arxiv.org/pdf/2002.08155.pdf). CodeBERT is a pre-trained model for programming language, which is a multi-programming-lingual model pre-trained on NL-PL pairs in 6 programming languages (Python, Java, JavaScript, PHP, Ruby, Go).
 
 ### Dependency
 
 - pip install torch==1.4.0
 - pip install transformers==2.5.0
 - pip install filelock more_itertools
-  
 
 ### Qiuck Tour
+
 We use huggingface/transformers framework to train the model. You can use our model like the pre-trained Roberta base. Now, We give an example on how to load the model.
+
 ```python
 import torch
 from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
@@ -33,7 +35,7 @@ You can use the following command to download the preprocessed training and vali
 ```shell
 mkdir data data/codesearch
 cd data/codesearch
-gdown https://drive.google.com/uc?id=1xgSR34XO8xXZg4cZScDYj2eGerBE9iGo  
+gdown https://drive.google.com/uc?id=1xgSR34XO8xXZg4cZScDYj2eGerBE9iGo
 unzip codesearch_data.zip
 rm  codesearch_data.zip
 cd ../../codesearch
@@ -42,11 +44,13 @@ cd ..
 ```
 
 ### Fine-Tune
-We fine-tuned the model on 2*P100 GPUs. 
+
+We fine-tuned the model on 2\*P100 GPUs.
+
 ```shell
 cd codesearch
 
-lang=php #fine-tuning a language-specific model for each programming language 
+lang=php #fine-tuning a language-specific model for each programming language
 pretrained_model=microsoft/codebert-base  #Roberta: roberta-base
 
 python run_classifier.py \
@@ -58,8 +62,8 @@ python run_classifier.py \
 --train_file train.txt \
 --dev_file valid.txt \
 --max_seq_length 200 \
---per_gpu_train_batch_size 32 \
---per_gpu_eval_batch_size 32 \
+--per_gpu_train_batch_size 64 \
+--per_gpu_eval_batch_size 64 \
 --learning_rate 1e-5 \
 --num_train_epochs 8 \
 --gradient_accumulation_steps 1 \
@@ -68,9 +72,11 @@ python run_classifier.py \
 --output_dir ./models/$lang  \
 --model_name_or_path $pretrained_model
 ```
+
 ### Inference and Evaluation
 
 Inference
+
 ```shell
 lang=php #programming language
 idx=0 #test batch idx
@@ -93,6 +99,7 @@ python run_classifier.py \
 ```
 
 Evaluation
+
 ```shell
 python mrr.py
 ```
@@ -101,8 +108,8 @@ python mrr.py
 
 As stated in the paper, CodeBERT is not suitable for mask prediction task, while CodeBERT (MLM) is suitable for mask prediction task.
 
-
 We give an example on how to use CodeBERT(MLM) for mask prediction task.
+
 ```python
 from transformers import RobertaConfig, RobertaTokenizer, RobertaForMaskedLM, pipeline
 
@@ -116,11 +123,15 @@ outputs = fill_mask(CODE)
 print(outputs)
 
 ```
+
 Results
+
 ```python
 'and', 'or', 'if', 'then', 'AND'
 ```
+
 The detailed outputs are as follows:
+
 ```python
 {'sequence': '<s> if (x is not None) and (x>1)</s>', 'score': 0.6049249172210693, 'token': 8}
 {'sequence': '<s> if (x is not None) or (x>1)</s>', 'score': 0.30680200457572937, 'token': 50}
@@ -162,8 +173,6 @@ Data statistic about the cleaned dataset for code document generation is shown i
 | JavaScript |  58,025  | 3,885  | 3,291  |
 | Ruby       |  24,927  | 1,400  | 1,261  |
 
-
-
 ### Data Download
 
 You can download dataset from the [website](https://drive.google.com/open?id=1rd2Tc6oUWBo7JouwexW3ksQ0PaOhUr6h). Or use the following command.
@@ -178,11 +187,9 @@ rm Cleaned_CodeSearchNet.zip
 cd ../..
 ```
 
-
-
 ### Fine-Tune
 
-We fine-tuned the model on 4*P40 GPUs. 
+We fine-tuned the model on 4\*P40 GPUs.
 
 ```shell
 cd code2nl
@@ -201,10 +208,8 @@ eval_steps=1000 #400 for ruby, 600 for javascript, 1000 for others
 train_steps=50000 #20000 for ruby, 30000 for javascript, 50000 for others
 pretrained_model=microsoft/codebert-base #Roberta: roberta-base
 
-python run.py --do_train --do_eval --model_type roberta --model_name_or_path $pretrained_model --train_filename $train_file --dev_filename $dev_file --output_dir $output_dir --max_source_length $source_length --max_target_length $target_length --beam_size $beam_size --train_batch_size $batch_size --eval_batch_size $batch_size --learning_rate $lr --train_steps $train_steps --eval_steps $eval_steps 
+python run.py --do_train --do_eval --model_type roberta --model_name_or_path $pretrained_model --train_filename $train_file --dev_filename $dev_file --output_dir $output_dir --max_source_length $source_length --max_target_length $target_length --beam_size $beam_size --train_batch_size $batch_size --eval_batch_size $batch_size --learning_rate $lr --train_steps $train_steps --eval_steps $eval_steps
 ```
-
-
 
 ### Inference and Evaluation
 
@@ -235,4 +240,5 @@ The results on CodeSearchNet are shown in this Table:
 | CodeBERT    | **12.16** | **14.90**  | **18.07** | **19.06** | **17.65** | **25.16** | **17.83** |
 
 ## Contact
+
 Feel free to contact Daya Guo (guody5@mail2.sysu.edu.cn) and Duyu Tang (dutang@microsoft.com) if you have any further questions.
