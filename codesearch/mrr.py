@@ -16,7 +16,7 @@ def main():
     languages = ['java']
     MRR_dict = {}
     for language in languages:
-        file_dir = './results_combine/{}'.format(language)
+        file_dir = './result_seed9/{}'.format(language)
         ranks = []
         num_batch = 0
         for file in sorted(os.listdir(file_dir)):

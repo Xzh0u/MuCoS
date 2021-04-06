@@ -151,6 +151,7 @@ def train(args, train_dataset, model, tokenizer, optimizer):
                             tb_writer.add_scalar(
                                 'eval_{}'.format(key), value, global_step)
                             logger.info('loss %s', str(tr_loss - logging_loss))
+                            print('loss:', str(tr_loss - logging_loss))
                     tb_writer.add_scalar(
                         'lr', scheduler.get_lr()[0], global_step)
                     tb_writer.add_scalar(
@@ -394,7 +395,7 @@ def main():
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--model_type", default=None, type=str, required=True,
                         help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
-    parser.add_argument("--model_name_or_path", default=None, type=str, required=True,
+    parser.add_argument("--model_name_or_path", default="microsoft/codebert-base", type=str, required=True,
                         help="Path to pre-trained model or shortcut name")
     parser.add_argument("--task_name", default='codesearch', type=str, required=True,
                         help="The name of the task to train selected in the list: " + ", ".join(processors.keys()))

@@ -31,7 +31,6 @@ class Ensemble(nn.Module):
         l1 = self.softmax(x1[1])
         l2 = self.softmax(x2[1])
         x = (l1 + l2) / 2
-        x = self.classifier(x)
         return loss, x
 
 
