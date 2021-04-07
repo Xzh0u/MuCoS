@@ -109,70 +109,71 @@ python run_classifier.py \
 --output_dir ../data/codesearch/test/$lang \
 --data_dir ../data/codesearch/test/$lang \
 --max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
+--per_gpu_train_batch_size 128 \
+--per_gpu_eval_batch_size 128 \
 --learning_rate 1e-5 \
 --num_train_epochs 12 \
+--seed 1 \
 --test_file batch_${idx}.txt \
 --pred_model_dir ./models_seed1/$lang/checkpoint-best/ \
---test_result_dir ./result_seed1/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed3/$lang/checkpoint-best/ \
---test_result_dir ./result_seed3/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed5/$lang/checkpoint-best/ \
---test_result_dir ./result_seed5/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed7/$lang/checkpoint-best/ \
---test_result_dir ./result_seed7/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed9/$lang/checkpoint-best/ \
---test_result_dir ./result_seed9/$lang/${idx}_batch_result.txt 
+--test_result_dir ./result_seed1_eval/$lang/${idx}_batch_result.txt # &&
+# python run_classifier.py \
+# --model_type roberta \
+# --model_name_or_path microsoft/codebert-base \
+# --task_name codesearch \
+# --do_predict \
+# --output_dir ../data/codesearch/test/$lang \
+# --data_dir ../data/codesearch/test/$lang \
+# --max_seq_length 200 \
+# --per_gpu_train_batch_size 64 \
+# --per_gpu_eval_batch_size 64 \
+# --learning_rate 1e-5 \
+# --num_train_epochs 12 \
+# --test_file batch_${idx}.txt \
+# --pred_model_dir ./models_seed3/$lang/checkpoint-best/ \
+# --test_result_dir ./result_seed3/$lang/${idx}_batch_result.txt &&
+# python run_classifier.py \
+# --model_type roberta \
+# --model_name_or_path microsoft/codebert-base \
+# --task_name codesearch \
+# --do_predict \
+# --output_dir ../data/codesearch/test/$lang \
+# --data_dir ../data/codesearch/test/$lang \
+# --max_seq_length 200 \
+# --per_gpu_train_batch_size 64 \
+# --per_gpu_eval_batch_size 64 \
+# --learning_rate 1e-5 \
+# --num_train_epochs 12 \
+# --test_file batch_${idx}.txt \
+# --pred_model_dir ./models_seed5/$lang/checkpoint-best/ \
+# --test_result_dir ./result_seed5/$lang/${idx}_batch_result.txt &&
+# python run_classifier.py \
+# --model_type roberta \
+# --model_name_or_path microsoft/codebert-base \
+# --task_name codesearch \
+# --do_predict \
+# --output_dir ../data/codesearch/test/$lang \
+# --data_dir ../data/codesearch/test/$lang \
+# --max_seq_length 200 \
+# --per_gpu_train_batch_size 64 \
+# --per_gpu_eval_batch_size 64 \
+# --learning_rate 1e-5 \
+# --num_train_epochs 12 \
+# --test_file batch_${idx}.txt \
+# --pred_model_dir ./models_seed7/$lang/checkpoint-best/ \
+# --test_result_dir ./result_seed7/$lang/${idx}_batch_result.txt &&
+# python run_classifier.py \
+# --model_type roberta \
+# --model_name_or_path microsoft/codebert-base \
+# --task_name codesearch \
+# --do_predict \
+# --output_dir ../data/codesearch/test/$lang \
+# --data_dir ../data/codesearch/test/$lang \
+# --max_seq_length 200 \
+# --per_gpu_train_batch_size 64 \
+# --per_gpu_eval_batch_size 64 \
+# --learning_rate 1e-5 \
+# --num_train_epochs 12 \
+# --test_file batch_${idx}.txt \
+# --pred_model_dir ./models_seed9/$lang/checkpoint-best/ \
+# --test_result_dir ./result_seed9/$lang/${idx}_batch_result.txt 
