@@ -1,0 +1,5 @@
+python mrr.py --result_dir "./result_seed1/java" --pic_name "seed1"
+python mrr.py --result_dir "./result_seed3/java" --pic_name "seed3"
+python mrr.py --result_dir "./result_seed5/java" --pic_name "seed5"
+python mrr.py --result_dir "./result_seed7/java" --pic_name "seed7"
+python mrr.py --result_dir "./result_seed9/java" --pic_name "seed9"

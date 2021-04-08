@@ -19,6 +19,7 @@ import glob
 import logging
 import os
 import random
+from torch.nn import CrossEntropyLoss, MSELoss
 
 
 import numpy as np
@@ -112,9 +113,18 @@ def train(args, train_dataset, model, tokenizer, optimizer):
                       'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet'] else None,
                       # XLM don't use segment_ids
                       'labels': batch[3]}
-            ouputs = model(**inputs)
+            logits, labels = model(**inputs)
+            num_labels = 2  # bad way
+            if labels is not None:
+                if num_labels == 1:
+                    #  We are doing regression
+                    loss_fct = MSELoss()
+                    loss = loss_fct(logits.view(-1), labels.view(-1))
+                else:
+                    loss_fct = CrossEntropyLoss()
+                    loss = loss_fct(
+                        logits.view(-1, num_labels), labels.view(-1))
             # model outputs are always tuple in pytorch-transformers (see doc)
-            loss = ouputs[0]
 
             if args.n_gpu > 1:
                 loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -148,7 +158,7 @@ def train(args, train_dataset, model, tokenizer, optimizer):
                     # Only evaluate when single GPU otherwise metrics may not average well
                     if args.local_rank == -1 and args.evaluate_during_training:
                         results = evaluate(
-                            args, model, tokenizer, checkpoint=str(global_step))
+                            args, model, tokenizer, checkpoint=str(global_step), is_train=True)
                         for key, value in results.items():
                             tb_writer.add_scalar(
                                 'eval_{}'.format(key), value, global_step)
@@ -223,7 +233,7 @@ def accuracy(out, labels):
     return np.sum(outputs == labels)
 
 
-def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
+def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev', is_train=False):
     # Loop to handle MNLI double evaluation (matched, mis-matched)
     eval_task_names = (args.task_name,)
     eval_outputs_dirs = (args.output_dir,)
@@ -269,8 +279,23 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
 
                 # outputs = model(**inputs)
                 # tmp_eval_loss, logits = outputs[:2]
-                tmp_eval_loss, logits = model(**inputs)
-
+                if is_train:
+                    logits, labels = model(**inputs)
+                else:
+                    labels = batch[3]
+                    logits = model(**inputs)
+                    logits = logits[0]
+                num_labels = 2  # bad way
+                if labels is not None:
+                    if num_labels == 1:
+                        #  We are doing regression
+                        loss_fct = MSELoss()
+                        tmp_eval_loss = loss_fct(
+                            logits.view(-1), labels.view(-1))
+                    else:
+                        loss_fct = CrossEntropyLoss()
+                        tmp_eval_loss = loss_fct(
+                            logits.view(-1, num_labels), labels.view(-1))
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
             if preds is None:
@@ -397,7 +422,7 @@ def main():
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--model_type", default=None, type=str, required=True,
                         help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
-    parser.add_argument("--model_name_or_path", default=None, type=str, required=True,
+    parser.add_argument("--model_name_or_path", default="microsoft/codebert-base", type=str, required=True,
                         help="Path to pre-trained model or shortcut name")
     parser.add_argument("--task_name", default='codesearch', type=str, required=True,
                         help="The name of the task to train selected in the list: " + ", ".join(processors.keys()))

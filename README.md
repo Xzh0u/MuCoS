@@ -70,7 +70,7 @@ python run_classifier.py \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
 --output_dir ./models/$lang  \
---model_name_or_path $pretrained_model
+--model_name_or_path $pretrained_model \
 ```
 
 ### Inference and Evaluation

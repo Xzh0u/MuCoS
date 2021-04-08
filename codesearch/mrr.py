@@ -6,17 +6,21 @@ import os
 import numpy as np
 from more_itertools import chunked
 import argparse
+import matplotlib.pyplot as plt
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_batch_size', type=int, default=1000)
+    parser.add_argument('--result_dir', type=str,
+                        default="./results_combine/java")
+    parser.add_argument('--pic_name', type=str,
+                        default="tmp")
     args = parser.parse_args()
     # languages = ['ruby', 'go', 'php', 'python', 'java', 'javascript']
     languages = ['java']
-    MRR_dict = {}
     for language in languages:
-        file_dir = './result_seed1_eval/{}'.format(language)
+        file_dir = args.result_dir
         ranks = []
         num_batch = 0
         for file in sorted(os.listdir(file_dir)):
@@ -32,11 +36,18 @@ def main():
                     rank = np.sum(scores >= correct_score)
                     ranks.append(rank)
 
-        mean_mrr = np.mean(1.0 / np.array(ranks))
+        valid_ranks = [number for number in ranks if number < 10]
+        mean_mrr = np.mean(1.0 / np.array(ranks))  # ignoring the NaN value
+        mean_frank = np.mean(np.array(valid_ranks))
+        std_frank = np.std(np.array(valid_ranks))
         print("{} mrr: {}".format(language, mean_mrr))
-        MRR_dict[language] = mean_mrr
-    for key, val in MRR_dict.items():
-        print("{} mrr: {}".format(key, val))
+        print("{} frank avg: {}".format(language, mean_frank))
+        print("{} ranks std: {}".format(language, std_frank))
+        fig = plt.hist(np.array(valid_ranks))
+        plt.savefig('{}_distribution.png'.format(args.pic_name))
+        # MRR_dict[language] = mean_mrr
+    # for key, val in MRR_dict.items():
+    #     print("{} mrr: {}".format(key, val))
 
 
 if __name__ == "__main__":

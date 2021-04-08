@@ -11,7 +11,7 @@ from transformers import (WEIGHTS_NAME, AdamW,
                           RobertaTokenizer)
 from transformers.modeling_bert import BertPreTrainedModel
 from utils import processors
-from run_classifier import evaluate, train, load_and_cache_examples, set_seed
+from run_classifier_new import evaluate, train, load_and_cache_examples, set_seed
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class Ensemble(BertPreTrainedModel):
                          token_type_ids=token_type_ids)
         x2 = self.modelB(input_ids=input_ids, attention_mask=attention_mask,
                          token_type_ids=token_type_ids)
-        x = torch.cat((x1[0], x2[0]), dim=1)
+        x = torch.cat((x1[0], x2[0]), dim=2)
         logits = self.classifier(x)
         return logits, labels
 
@@ -49,9 +49,9 @@ class RobertaClassificationHead(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(
-            config.hidden_size, config.hidden_size)  # need * 2?
+            config.hidden_size * 2, config.hidden_size * 2)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
-        self.out_proj = nn.Linear(config.hidden_size, config.num_labels)
+        self.out_proj = nn.Linear(config.hidden_size * 2, config.num_labels)
 
     def forward(self, features, **kwargs):
         x = features[:, 0, :]  # take <s> token (equiv. to [CLS])
@@ -253,9 +253,9 @@ def main():
     optimizer = AdamW(optimizer_grouped_parameters,
                       lr=args.learning_rate, eps=args.adam_epsilon)
 
-    optimizer_last = os.path.join(checkpoint_last, 'optimizer.pt')
-    if os.path.exists(optimizer_last):
-        optimizer.load_state_dict(torch.load(optimizer_last))
+    # optimizer_last = os.path.join(checkpoint_last, 'optimizer.pt')
+    # if os.path.exists(optimizer_last):
+    #     optimizer.load_state_dict(torch.load(optimizer_last))
 
     if args.n_gpu > 1:
         model = torch.nn.DataParallel(model)

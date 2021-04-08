@@ -134,5 +134,5 @@ codesearch/models
 TEMP/
 runs/
 output/
-results*/
+result*/
 models*/
