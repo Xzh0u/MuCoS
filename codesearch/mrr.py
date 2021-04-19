@@ -13,9 +13,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_batch_size', type=int, default=1000)
     parser.add_argument('--result_dir', type=str,
-                        default="./results_combine/java")
+                        default="./results_ensemble/java")
     parser.add_argument('--pic_name', type=str,
-                        default="tmp")
+                        default="ensemble")
     args = parser.parse_args()
     # languages = ['ruby', 'go', 'php', 'python', 'java', 'javascript']
     languages = ['java']
@@ -44,7 +44,7 @@ def main():
         print("{} frank avg: {}".format(language, mean_frank))
         print("{} ranks std: {}".format(language, std_frank))
         fig = plt.hist(np.array(valid_ranks))
-        plt.savefig('{}_distribution.png'.format(args.pic_name))
+        plt.savefig('pic/{}_distribution.png'.format(args.pic_name))
         # MRR_dict[language] = mean_mrr
     # for key, val in MRR_dict.items():
     #     print("{} mrr: {}".format(key, val))

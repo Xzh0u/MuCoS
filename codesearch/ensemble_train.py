@@ -1,3 +1,4 @@
+import copy
 import torch
 import argparse
 import logging
@@ -28,19 +29,23 @@ def init_weights(m):
 class Ensemble(BertPreTrainedModel):
     def __init__(self, modelA, modelB, config):
         super(Ensemble, self).__init__(config)
-        self.modelA = modelA
-        self.modelB = modelB
+        self.sub_modules = nn.ModuleDict({
+            "modelA": modelA,
+            "modelB": modelB
+        })
+        #self.modelA = modelA
+        #self.modelB = modelB
         self.classifier = RobertaClassificationHead(config)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, input_ids, attention_mask=None, token_type_ids=None, labels=None):
-        x1 = self.modelA(input_ids=input_ids, attention_mask=attention_mask,
-                         token_type_ids=token_type_ids)
-        x2 = self.modelB(input_ids=input_ids, attention_mask=attention_mask,
-                         token_type_ids=token_type_ids)
+        x1 = self.sub_modules["modelA"](input_ids=input_ids, attention_mask=attention_mask,
+                                        token_type_ids=token_type_ids)
+        x2 = self.sub_modules["modelB"](input_ids=input_ids, attention_mask=attention_mask,
+                                        token_type_ids=token_type_ids)
         x = torch.cat((x1[0], x2[0]), dim=2)
         logits = self.classifier(x)
-        return logits, labels
+        return logits
 
 
 class RobertaClassificationHead(nn.Module):
@@ -52,6 +57,8 @@ class RobertaClassificationHead(nn.Module):
             config.hidden_size * 2, config.hidden_size * 2)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.out_proj = nn.Linear(config.hidden_size * 2, config.num_labels)
+        torch.nn.init.xavier_uniform(self.dense.weight)
+        torch.nn.init.xavier_uniform(self.out_proj.weight)
 
     def forward(self, features, **kwargs):
         x = features[:, 0, :]  # take <s> token (equiv. to [CLS])
@@ -61,6 +68,222 @@ class RobertaClassificationHead(nn.Module):
         x = self.dropout(x)
         x = self.out_proj(x)
         return x
+
+
+def from_pretrained(cls, pretrained_model_name_or_path, model_copy=0, ensemble=False, *model_args, **kwargs):
+    config = kwargs.pop("config", None)
+    state_dict = kwargs.pop("state_dict", None)
+    cache_dir = kwargs.pop("cache_dir", None)
+    from_tf = kwargs.pop("from_tf", False)
+    force_download = kwargs.pop("force_download", False)
+    resume_download = kwargs.pop("resume_download", False)
+    proxies = kwargs.pop("proxies", None)
+    output_loading_info = kwargs.pop("output_loading_info", False)
+
+    # Load config if we don't provide a configuration
+    if not isinstance(config, PretrainedConfig):
+        config_path = config if config is not None else pretrained_model_name_or_path
+        config, model_kwargs = cls.config_class.from_pretrained(
+            config_path,
+            *model_args,
+            cache_dir=cache_dir,
+            return_unused_kwargs=True,
+            force_download=force_download,
+            resume_download=resume_download,
+            proxies=proxies,
+            **kwargs,
+        )
+        print("A1, config:", config, " model_kwargs:", model_kwargs)
+    else:
+        model_kwargs = kwargs
+
+    # Load model
+    if pretrained_model_name_or_path is not None:
+        if pretrained_model_name_or_path in cls.pretrained_model_archive_map:
+            archive_file = cls.pretrained_model_archive_map[pretrained_model_name_or_path]
+        elif os.path.isdir(pretrained_model_name_or_path):
+            if from_tf and os.path.isfile(os.path.join(pretrained_model_name_or_path, TF_WEIGHTS_NAME + ".index")):
+                # Load from a TF 1.0 checkpoint
+                archive_file = os.path.join(
+                    pretrained_model_name_or_path, TF_WEIGHTS_NAME + ".index")
+            elif from_tf and os.path.isfile(os.path.join(pretrained_model_name_or_path, TF2_WEIGHTS_NAME)):
+                # Load from a TF 2.0 checkpoint
+                archive_file = os.path.join(
+                    pretrained_model_name_or_path, TF2_WEIGHTS_NAME)
+            elif os.path.isfile(os.path.join(pretrained_model_name_or_path, WEIGHTS_NAME)):
+                # Load from a PyTorch checkpoint
+                archive_file = os.path.join(
+                    pretrained_model_name_or_path, WEIGHTS_NAME)
+            else:
+                raise EnvironmentError(
+                    "Error no file named {} found in directory {} or `from_tf` set to False".format(
+                        [WEIGHTS_NAME, TF2_WEIGHTS_NAME, TF_WEIGHTS_NAME +
+                            ".index"], pretrained_model_name_or_path
+                    )
+                )
+        elif os.path.isfile(pretrained_model_name_or_path) or is_remote_url(pretrained_model_name_or_path):
+            archive_file = pretrained_model_name_or_path
+        elif os.path.isfile(pretrained_model_name_or_path + ".index"):
+            assert (
+                from_tf
+            ), "We found a TensorFlow checkpoint at {}, please set from_tf to True to load from this checkpoint".format(
+                pretrained_model_name_or_path + ".index"
+            )
+            archive_file = pretrained_model_name_or_path + ".index"
+        else:
+            archive_file = hf_bucket_url(
+                pretrained_model_name_or_path, postfix=(
+                    TF2_WEIGHTS_NAME if from_tf else WEIGHTS_NAME)
+            )
+
+        # redirect to the cache, if necessary
+        try:
+            resolved_archive_file = cached_path(
+                archive_file,
+                cache_dir=cache_dir,
+                force_download=force_download,
+                proxies=proxies,
+                resume_download=resume_download,
+            )
+        except EnvironmentError:
+            if pretrained_model_name_or_path in cls.pretrained_model_archive_map:
+                msg = "Couldn't reach server at '{}' to download pretrained weights.".format(
+                    archive_file)
+            else:
+                msg = (
+                    "Model name '{}' was not found in model name list ({}). "
+                    "We assumed '{}' was a path or url to model weight files named one of {} but "
+                    "couldn't find any such file at this path or url.".format(
+                        pretrained_model_name_or_path,
+                        ", ".join(cls.pretrained_model_archive_map.keys()),
+                        archive_file,
+                        [WEIGHTS_NAME, TF2_WEIGHTS_NAME, TF_WEIGHTS_NAME],
+                    )
+                )
+            raise EnvironmentError(msg)
+
+        if resolved_archive_file == archive_file:
+            logger.info("loading weights file {}".format(archive_file))
+        else:
+            logger.info("loading weights file {} from cache at {}".format(
+                archive_file, resolved_archive_file))
+    else:
+        resolved_archive_file = None
+
+    # Instantiate model.
+    model = cls(config, *model_args, **model_kwargs)
+    if ensemble:
+        model = model_copy
+    print("model!!:", model)
+    if state_dict is None and not from_tf:
+        try:
+            state_dict = torch.load(
+                resolved_archive_file, map_location="cpu")
+        except Exception:
+            raise OSError(
+                "Unable to load weights from pytorch checkpoint file. "
+                "If you tried to load a PyTorch model from a TF 2.0 checkpoint, please set from_tf=True. "
+            )
+
+    missing_keys = []
+    unexpected_keys = []
+    error_msgs = []
+
+    if from_tf:
+        if resolved_archive_file.endswith(".index"):
+            # Load from a TensorFlow 1.X checkpoint - provided by original authors
+            model = cls.load_tf_weights(
+                model, config, resolved_archive_file[:-6])  # Remove the '.index'
+        else:
+            # Load from our TensorFlow 2.0 checkpoints
+            try:
+                from transformers import load_tf2_checkpoint_in_pytorch_model
+
+                model = load_tf2_checkpoint_in_pytorch_model(
+                    model, resolved_archive_file, allow_missing_keys=True)
+            except ImportError:
+                logger.error(
+                    "Loading a TensorFlow model in PyTorch, requires both PyTorch and TensorFlow to be installed. Please see "
+                    "https://pytorch.org/ and https://www.tensorflow.org/install/ for installation instructions."
+                )
+                raise
+    else:
+        # Convert old format to new format if needed from a PyTorch state_dict
+        old_keys = []
+        new_keys = []
+        for key in state_dict.keys():
+            new_key = None
+            if "gamma" in key:
+                new_key = key.replace("gamma", "weight")
+            if "beta" in key:
+                new_key = key.replace("beta", "bias")
+            if new_key:
+                old_keys.append(key)
+                new_keys.append(new_key)
+        for old_key, new_key in zip(old_keys, new_keys):
+            state_dict[new_key] = state_dict.pop(old_key)
+
+        # copy state_dict so _load_from_state_dict can modify it
+        metadata = getattr(state_dict, "_metadata", None)
+        state_dict = state_dict.copy()
+        if metadata is not None:
+            state_dict._metadata = metadata
+
+        # PyTorch's `_load_from_state_dict` does not copy parameters in a module's descendants
+        # so we need to apply the function recursively.
+        def load(module: nn.Module, prefix=""):
+            local_metadata = {} if metadata is None else metadata.get(
+                prefix[:-1], {})
+            module._load_from_state_dict(
+                state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+            )
+            for name, child in module._modules.items():
+                if child is not None:
+                    load(child, prefix + name + ".")
+
+        # Make sure we are able to load base models as well as derived models (with heads)
+        start_prefix = ""
+        model_to_load = model
+        if not hasattr(model, cls.base_model_prefix) and any(
+            s.startswith(cls.base_model_prefix) for s in state_dict.keys()
+        ):
+            start_prefix = cls.base_model_prefix + "."
+        if hasattr(model, cls.base_model_prefix) and not any(
+            s.startswith(cls.base_model_prefix) for s in state_dict.keys()
+        ):
+            model_to_load = getattr(model, cls.base_model_prefix)
+        print(model_to_load)
+        load(model_to_load, prefix=start_prefix)
+        if len(missing_keys) > 0:
+            logger.info(
+                "Weights of {} not initialized from pretrained model: {}".format(
+                    model.__class__.__name__, missing_keys
+                )
+            )
+        if len(unexpected_keys) > 0:
+            logger.info(
+                "Weights from pretrained model not used in {}: {}".format(
+                    model.__class__.__name__, unexpected_keys
+                )
+            )
+        if len(error_msgs) > 0:
+            raise RuntimeError(
+                "Error(s) in loading state_dict for {}:\n\t{}".format(
+                    model.__class__.__name__, "\n\t".join(error_msgs)
+                )
+            )
+
+    model.tie_weights()  # make sure word embedding weights are still tied if needed
+
+    # Set model in evaluation mode to desactivate DropOut modules by default
+    model.eval()
+
+    if output_loading_info:
+        loading_info = {"missing_keys": missing_keys,
+                        "unexpected_keys": unexpected_keys, "error_msgs": error_msgs}
+        return model, loading_info
+
+    return model
 
 
 def main():
@@ -156,6 +379,8 @@ def main():
                         help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--pred_modelB_dir", default=None, type=str,
                         help='./codesearch/models/java/checkpoint-best')
+    parser.add_argument("--pred_model_dir", default=None, type=str,
+                        help='predict model dir')
     parser.add_argument("--test_result_dir", default='./results/java/0_batch_result.txt', type=str,
                         help='path to store test result')
     args = parser.parse_args()
@@ -234,7 +459,8 @@ def main():
     modelB.classifier = nn.Sequential(*list(modelB.classifier.children())[:-3])
 
     model = Ensemble(modelA, modelB, config)
-    model.apply(init_weights)
+    model_copy = copy.deepcopy(model)
+    # model.apply(init_weights)
 
     if args.local_rank == 0:
         # Make sure only the first process in distributed training will download model & vocab
@@ -253,9 +479,9 @@ def main():
     optimizer = AdamW(optimizer_grouped_parameters,
                       lr=args.learning_rate, eps=args.adam_epsilon)
 
-    # optimizer_last = os.path.join(checkpoint_last, 'optimizer.pt')
-    # if os.path.exists(optimizer_last):
-    #     optimizer.load_state_dict(torch.load(optimizer_last))
+    optimizer_last = os.path.join(checkpoint_last, 'optimizer.pt')
+    if os.path.exists(optimizer_last):
+        optimizer.load_state_dict(torch.load(optimizer_last))
 
     if args.n_gpu > 1:
         model = torch.nn.DataParallel(model)
@@ -294,7 +520,8 @@ def main():
         torch.save(args, os.path.join(args.output_dir, 'training_args.bin'))
 
         # Load a trained model and vocabulary that you have fine-tuned
-        model = model_class.from_pretrained(args.output_dir)
+        model = model_class.from_pretrained(
+            args.output_dir, model_copy=model_copy, ensemble=True)
         tokenizer = tokenizer_class.from_pretrained(args.output_dir)
         model.to(args.device)
 
@@ -312,7 +539,8 @@ def main():
             print(checkpoint)
             global_step = checkpoint.split(
                 '-')[-1] if len(checkpoints) > 1 else ""
-            model = model_class.from_pretrained(checkpoint)
+            model = model_class.from_pretrained(
+                checkpoint, model_copy=model_copy, ensemble=True)
             model.to(args.device)
             result = evaluate(args, model, tokenizer,
                               checkpoint=checkpoint, prefix=global_step)
@@ -322,10 +550,13 @@ def main():
 
     if args.do_predict:
         print('testing')
-        model = model_class.from_pretrained(args.pred_model_dir)
+        model = model_class.from_pretrained(
+            args.pred_model_dir, model_copy=model_copy, ensemble=True)
         model.to(args.device)
         evaluate(args, model, tokenizer,
                  checkpoint=None, prefix='', mode='test')
+        return
+
     return results
 
 

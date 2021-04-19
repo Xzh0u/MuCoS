@@ -47,6 +47,7 @@ def set_seed(args):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     if args.n_gpu > 0:
@@ -100,7 +101,7 @@ def train(args, train_dataset, model, tokenizer, optimizer):
     train_iterator = trange(args.start_epoch, int(args.num_train_epochs), desc="Epoch",
                             disable=args.local_rank not in [-1, 0])
     # Added here for reproductibility (even between python 2 and 3)
-    # set_seed(args)
+    set_seed(args)
     model.train()
     for idx, _ in enumerate(train_iterator):
         tr_loss = 0.0
@@ -266,10 +267,10 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
                           'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet'] else None,
                           # XLM don't use segment_ids
                           'labels': batch[3]}
-
-                # outputs = model(**inputs)
-                # tmp_eval_loss, logits = outputs[:2]
-                tmp_eval_loss, logits = model(**inputs)
+                # TODO: change!!!
+                outputs = model(**inputs)
+                tmp_eval_loss, logits = outputs[:2]
+                # tmp_eval_loss, logits = model(**inputs)
 
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
