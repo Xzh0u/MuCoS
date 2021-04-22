@@ -32,13 +32,23 @@ from tqdm import tqdm, trange
 
 from transformers import (WEIGHTS_NAME, get_linear_schedule_with_warmup, AdamW,
                           RobertaConfig,
-                          #   RobertaForSequenceClassification,
+                          # RobertaForSequenceClassification,
+                          BertPreTrainedModel,
                           RobertaTokenizer)
 
 from utils import (compute_metrics, convert_examples_to_features,
                    output_modes, processors)
 
 logger = logging.getLogger(__name__)
+
+ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP = {
+    "roberta-base": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-base-pytorch_model.bin",
+    "roberta-large": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-large-pytorch_model.bin",
+    "roberta-large-mnli": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-large-mnli-pytorch_model.bin",
+    "distilroberta-base": "https://s3.amazonaws.com/models.huggingface.co/bert/distilroberta-base-pytorch_model.bin",
+    "roberta-base-openai-detector": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-base-openai-detector-pytorch_model.bin",
+    "roberta-large-openai-detector": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-large-openai-detector-pytorch_model.bin",
+}
 
 
 class RobertaForSequenceClassification(BertPreTrainedModel):
@@ -53,7 +63,6 @@ class RobertaForSequenceClassification(BertPreTrainedModel):
         self.roberta = RobertaModel(config)
         self.classifier = RobertaClassificationHead(config)
 
-    @add_start_docstrings_to_callable(ROBERTA_INPUTS_DOCSTRING)
     def forward(
         self,
         input_ids=None,
