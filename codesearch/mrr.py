@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_batch_size', type=int, default=1000)
     parser.add_argument('--result_dir', type=str,
-                        default="./results_ensemble/java")
+                        default="./results_ensemble1-4_seed1/java")
     parser.add_argument('--pic_name', type=str,
                         default="ensemble")
     args = parser.parse_args()

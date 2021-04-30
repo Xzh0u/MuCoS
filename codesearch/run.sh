@@ -8,7 +8,7 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
---train_file train_struct_adv.txt \
+--train_file train_switch2if_adv_40000.txt \
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -18,7 +18,7 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed1_struct/$lang  \
+--output_dir ./models_seed1_switch2if/$lang  \
 --model_name_or_path $pretrained_model \
 --seed 1 && 
 python run_classifier.py \
@@ -27,7 +27,7 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
---train_file train_struct_adv.txt \
+--train_file train_switch2if_adv_40000.txt \
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -37,7 +37,7 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed3_struct/$lang  \
+--output_dir ./models_seed3_switch2if/$lang  \
 --model_name_or_path $pretrained_model \
 --seed 3 &&
 python run_classifier.py \
@@ -46,7 +46,7 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
---train_file train_struct_adv.txt \
+--train_file train_switch2if_adv_40000.txt \
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -56,7 +56,7 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed5_struct/$lang  \
+--output_dir ./models_seed5_switch2if/$lang  \
 --model_name_or_path $pretrained_model \
 --seed 5 &&
 python run_classifier.py \
@@ -65,7 +65,7 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
---train_file train_struct_adv.txt \
+--train_file train_switch2if_adv_40000.txt \
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -75,7 +75,7 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed7_struct/$lang  \
+--output_dir ./models_seed7_switch2if/$lang  \
 --model_name_or_path $pretrained_model \
 --seed 7 &&
 python run_classifier.py \
@@ -84,7 +84,7 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
---train_file train_struct_adv.txt \
+--train_file train_switch2if_adv_40000.txt \
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -94,7 +94,7 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed11_struct/$lang  \
+--output_dir ./models_seed11_switch2if/$lang  \
 --model_name_or_path $pretrained_model \
 --seed 11
 
@@ -113,8 +113,8 @@ python run_classifier.py \
 --num_train_epochs 12 \
 --seed 1 \
 --test_file batch_${idx}.txt \
---pred_model_dir ./models_seed1_struct/$lang/checkpoint-best/ \
---test_result_dir ./result_seed1_struct/$lang/${idx}_batch_result.txt  &&
+--pred_model_dir ./models_seed1_switch2if/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed1_switch2if/$lang/${idx}_batch_result.txt  &&
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -128,8 +128,8 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 12 \
 --test_file batch_${idx}.txt \
---pred_model_dir ./models_seed3_struct/$lang/checkpoint-best/ \
---test_result_dir ./result_seed3_struct/$lang/${idx}_batch_result.txt &&
+--pred_model_dir ./models_seed3_switch2if/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed3_switch2if/$lang/${idx}_batch_result.txt &&
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -143,8 +143,8 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 12 \
 --test_file batch_${idx}.txt \
---pred_model_dir ./models_seed5_struct/$lang/checkpoint-best/ \
---test_result_dir ./result_seed5_struct/$lang/${idx}_batch_result.txt &&
+--pred_model_dir ./models_seed5_switch2if/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed5_switch2if/$lang/${idx}_batch_result.txt &&
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -158,8 +158,8 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 12 \
 --test_file batch_${idx}.txt \
---pred_model_dir ./models_seed7_struct/$lang/checkpoint-best/ \
---test_result_dir ./result_seed7_struct/$lang/${idx}_batch_result.txt &&
+--pred_model_dir ./models_seed7_switch2if/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed7_switch2if/$lang/${idx}_batch_result.txt &&
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -173,180 +173,5 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 12 \
 --test_file batch_${idx}.txt \
---pred_model_dir ./models_seed11_struct/$lang/checkpoint-best/ \
---test_result_dir ./result_seed11_struct/$lang/${idx}_batch_result.txt 
-
-# do var
-python run_classifier.py \
---model_type roberta \
---task_name codesearch \
---do_train \
---do_eval \
---eval_all_checkpoints \
---train_file train_var_adv.txt \
---dev_file valid.txt \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---gradient_accumulation_steps 1 \
---overwrite_output_dir \
---data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed1_var/$lang  \
---model_name_or_path $pretrained_model \
---seed 1 && 
-python run_classifier.py \
---model_type roberta \
---task_name codesearch \
---do_train \
---do_eval \
---eval_all_checkpoints \
---train_file train_var_adv.txt \
---dev_file valid.txt \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---gradient_accumulation_steps 1 \
---overwrite_output_dir \
---data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed3_var/$lang  \
---model_name_or_path $pretrained_model \
---seed 3 &&
-python run_classifier.py \
---model_type roberta \
---task_name codesearch \
---do_train \
---do_eval \
---eval_all_checkpoints \
---train_file train_var_adv.txt \
---dev_file valid.txt \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---gradient_accumulation_steps 1 \
---overwrite_output_dir \
---data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed5_var/$lang  \
---model_name_or_path $pretrained_model \
---seed 5 &&
-python run_classifier.py \
---model_type roberta \
---task_name codesearch \
---do_train \
---do_eval \
---eval_all_checkpoints \
---train_file train_var_adv.txt \
---dev_file valid.txt \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---gradient_accumulation_steps 1 \
---overwrite_output_dir \
---data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed7_var/$lang  \
---model_name_or_path $pretrained_model \
---seed 7 &&
-python run_classifier.py \
---model_type roberta \
---task_name codesearch \
---do_train \
---do_eval \
---eval_all_checkpoints \
---train_file train_var_adv.txt \
---dev_file valid.txt \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---gradient_accumulation_steps 1 \
---overwrite_output_dir \
---data_dir ../data/codesearch/train_valid/$lang \
---output_dir ./models_seed11_var/$lang  \
---model_name_or_path $pretrained_model \
---seed 11
-
-
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 128 \
---per_gpu_eval_batch_size 128 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---seed 1 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed1_var/$lang/checkpoint-best/ \
---test_result_dir ./result_seed1_var/$lang/${idx}_batch_result.txt  &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed3_var/$lang/checkpoint-best/ \
---test_result_dir ./result_seed3_var/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed5_var/$lang/checkpoint-best/ \
---test_result_dir ./result_seed5_var/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed7_var/$lang/checkpoint-best/ \
---test_result_dir ./result_seed7_var/$lang/${idx}_batch_result.txt &&
-python run_classifier.py \
---model_type roberta \
---model_name_or_path microsoft/codebert-base \
---task_name codesearch \
---do_predict \
---output_dir ../data/codesearch/test/$lang \
---data_dir ../data/codesearch/test/$lang \
---max_seq_length 200 \
---per_gpu_train_batch_size 64 \
---per_gpu_eval_batch_size 64 \
---learning_rate 1e-5 \
---num_train_epochs 12 \
---test_file batch_${idx}.txt \
---pred_model_dir ./models_seed11_var/$lang/checkpoint-best/ \
---test_result_dir ./result_seed11_var/$lang/${idx}_batch_result.txt 
+--pred_model_dir ./models_seed11_switch2if/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed11_switch2if/$lang/${idx}_batch_result.txt 
