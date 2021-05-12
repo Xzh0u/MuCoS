@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_batch_size', type=int, default=1000)
+    parser.add_argument('--test_batch_size', type=int, default=312)
     parser.add_argument('--result_dir', type=str,
-                        default="./results_ensemble1-4_seed1/java")
+                        default="/home/v-xiaoshi/workspace/CodeBERT/codesearch/results_origin_annotated_queries_seed1/java")
     parser.add_argument('--pic_name', type=str,
                         default="ensemble")
     args = parser.parse_args()
@@ -37,6 +37,7 @@ def main():
                     ranks.append(rank)
 
         valid_ranks = [number for number in ranks if number < 10]
+        print("num of valid: ", len(valid_ranks))
         mean_mrr = np.mean(1.0 / np.array(ranks))  # ignoring the NaN value
         mean_frank = np.mean(np.array(valid_ranks))
         std_frank = np.std(np.array(valid_ranks))

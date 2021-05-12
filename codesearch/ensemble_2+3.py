@@ -13,13 +13,12 @@ MODEL_CLASSES = {'roberta': (
     RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer)}
 
 
-class Ensemble(nn.Module):
-    def __init__(self, modelA, modelB, modelC, modelD):
-        super(Ensemble, self).__init__()
+class Ensemble3(nn.Module):
+    def __init__(self, modelA, modelB, modelC):
+        super(Ensemble3, self).__init__()
         self.modelA = modelA
         self.modelB = modelB
         self.modelC = modelC
-        self.modelD = modelD
         self.classifier = nn.Linear(2, 2)
         self.softmax = nn.Softmax(dim=1)
 
@@ -30,15 +29,33 @@ class Ensemble(nn.Module):
                          token_type_ids=token_type_ids, labels=labels)
         x3 = self.modelC(input_ids=input_ids, attention_mask=attention_mask,
                          token_type_ids=token_type_ids, labels=labels)
-        x4 = self.modelD(input_ids=input_ids, attention_mask=attention_mask,
-                         token_type_ids=token_type_ids, labels=labels)
         # x = torch.cat((x1[0], x2[0]), dim=1)
-        loss = (x1[0] + x2[0] + x3[0] + x4[0]) / 4
+        loss = (x1[0] + x2[0] + x3[0]) / 3
         l1 = self.softmax(x1[1])
         l2 = self.softmax(x2[1])
         l3 = self.softmax(x3[1])
-        l4 = self.softmax(x4[1])
-        x = (l1 + l2 + l3 + l4) / 4
+        x = (l1 + l2 + l3) / 3
+        return loss, x
+
+
+class Ensemble2(nn.Module):
+    def __init__(self, modelA, modelB):
+        super(Ensemble2, self).__init__()
+        self.modelA = modelA
+        self.modelB = modelB
+        self.classifier = nn.Linear(2, 2)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None, labels=None):
+        x1 = self.modelA(input_ids=input_ids, attention_mask=attention_mask,
+                         token_type_ids=token_type_ids, labels=labels)
+        x2 = self.modelB(input_ids=input_ids, attention_mask=attention_mask,
+                         token_type_ids=token_type_ids, labels=labels)
+        # x = torch.cat((x1[0], x2[0]), dim=1)
+        loss = (x1[0] + x2[0]) / 2
+        l1 = self.softmax(x1[1])
+        l2 = self.softmax(x2[1])
+        x = (l1 + l2) / 2
         return loss, x
 
 
@@ -160,10 +177,11 @@ def main():
 
     modelA = model_class.from_pretrained(args.pred_modelA_dir)
     modelB = model_class.from_pretrained(args.pred_modelB_dir)
+    modelAB = Ensemble2(modelA, modelB)
     modelC = model_class.from_pretrained(args.pred_modelC_dir)
     modelD = model_class.from_pretrained(args.pred_modelD_dir)
 
-    model = Ensemble(modelA, modelB, modelC, modelD)
+    model = Ensemble3(modelAB, modelC, modelD)
     model.to(device)
     evaluate(args, model, tokenizer,
              checkpoint=None, prefix='', mode='test')
