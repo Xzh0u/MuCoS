@@ -1,7 +1,11 @@
 python ensemble2.py \
 --model_type roberta \
 --task_name codesearch \
---do_predict \
+--do_train \
+--do_eval \
+--eval_all_checkpoints \
+--train_file train_origin.txt \
+--dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 32 \
 --per_gpu_eval_batch_size 32 \
@@ -19,7 +23,11 @@ python ensemble2.py \
 python ensemble2.py \
 --model_type roberta \
 --task_name codesearch \
---do_predict \
+--do_train \
+--do_eval \
+--eval_all_checkpoints \
+--train_file train_origin.txt \
+--dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 32 \
 --per_gpu_eval_batch_size 32 \
@@ -37,7 +45,11 @@ python ensemble2.py \
 python ensemble2.py \
 --model_type roberta \
 --task_name codesearch \
---do_predict \
+--do_train \
+--do_eval \
+--eval_all_checkpoints \
+--train_file train_origin.txt \
+--dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 32 \
 --per_gpu_eval_batch_size 32 \
@@ -55,7 +67,11 @@ python ensemble2.py \
 python ensemble2.py \
 --model_type roberta \
 --task_name codesearch \
---do_predict \
+--do_train \
+--do_eval \
+--eval_all_checkpoints \
+--train_file train_origin.txt \
+--dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 32 \
 --per_gpu_eval_batch_size 32 \
@@ -73,7 +89,11 @@ python ensemble2.py \
 python ensemble2.py \
 --model_type roberta \
 --task_name codesearch \
---do_predict \
+--do_train \
+--do_eval \
+--eval_all_checkpoints \
+--train_file train_origin.txt \
+--dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 32 \
 --per_gpu_eval_batch_size 32 \

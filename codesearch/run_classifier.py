@@ -306,6 +306,7 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
             with open(output_test_file, "w") as writer:
                 logger.info("***** Output test results *****")
                 all_logits = preds.tolist()
+                print("all_logits", len(all_logits))
                 for i, logit in tqdm(enumerate(all_logits), desc='Testing'):
                     instance_rep = '<CODESPLIT>'.join(
                         [item.encode('ascii', 'ignore').decode('ascii') for item in instances[i]])
