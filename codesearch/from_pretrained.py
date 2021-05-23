@@ -90,7 +90,6 @@
                 proxies=proxies,
                 **kwargs,
             )
-            print("A1, config:", config, " model_kwargs:", model_kwargs)
         else:
             model_kwargs = kwargs
 
@@ -171,7 +170,6 @@
         model = cls(config, *model_args, **model_kwargs)
         if ensemble:
             model = model_copy
-        print("model!!:", model)
         if state_dict is None and not from_tf:
             try:
                 state_dict = torch.load(

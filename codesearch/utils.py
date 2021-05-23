@@ -155,7 +155,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
         tokens_a = tokenizer.tokenize(example.text_a)[:50]
 
         tokens_b = None
-        if example.text_b:
+        if example.text_b: # text_a -> NL, text_b -> code
             tokens_b = tokenizer.tokenize(example.text_b)
             # Modifies `tokens_a` and `tokens_b` in place so that the total
             # length is less than the specified length.
