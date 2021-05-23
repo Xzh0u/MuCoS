@@ -14,10 +14,12 @@ MODEL_CLASSES = {'roberta': (
 
 
 class Ensemble(nn.Module):
-    def __init__(self, modelA, modelB):
+    def __init__(self, modelA, modelB, modelC, modelD):
         super(Ensemble, self).__init__()
         self.modelA = modelA
         self.modelB = modelB
+        self.modelC = modelC
+        self.modelD = modelD
         self.classifier = nn.Linear(2, 2)
         self.softmax = nn.Softmax(dim=1)
 
@@ -26,11 +28,17 @@ class Ensemble(nn.Module):
                          token_type_ids=token_type_ids, labels=labels)
         x2 = self.modelB(input_ids=input_ids, attention_mask=attention_mask,
                          token_type_ids=token_type_ids, labels=labels)
+        x3 = self.modelC(input_ids=input_ids, attention_mask=attention_mask,
+                         token_type_ids=token_type_ids, labels=labels)
+        x4 = self.modelD(input_ids=input_ids, attention_mask=attention_mask,
+                         token_type_ids=token_type_ids, labels=labels)
         # x = torch.cat((x1[0], x2[0]), dim=1)
-        loss = (x1[0] + x2[0]) / 2
+        loss = (x1[0] + x2[0] + x3[0] + x4[0]) / 4
         l1 = self.softmax(x1[1])
         l2 = self.softmax(x2[1])
-        x = (l1 + l2) / 2
+        l3 = self.softmax(x3[1])
+        l4 = self.softmax(x4[1])
+        x = (l1 + l2 + l3 + l4) / 4
         return loss, x
 
 
@@ -127,6 +135,10 @@ def main():
                         help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--pred_modelB_dir", default=None, type=str,
                         help='./codesearch/models/java/checkpoint-best')
+    parser.add_argument("--pred_modelC_dir", default=None, type=str,
+                        help='./codesearch/models/java/checkpoint-best')
+    parser.add_argument("--pred_modelD_dir", default=None, type=str,
+                        help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--test_result_dir", default='./results/java/0_batch_result.txt', type=str,
                         help='path to store test result')
     args = parser.parse_args()
@@ -148,8 +160,10 @@ def main():
 
     modelA = model_class.from_pretrained(args.pred_modelA_dir)
     modelB = model_class.from_pretrained(args.pred_modelB_dir)
+    modelC = model_class.from_pretrained(args.pred_modelC_dir)
+    modelD = model_class.from_pretrained(args.pred_modelD_dir)
 
-    model = Ensemble(modelA, modelB)
+    model = Ensemble(modelA, modelB, modelC, modelD)
     model.to(device)
     evaluate(args, model, tokenizer,
              checkpoint=None, prefix='', mode='test')
