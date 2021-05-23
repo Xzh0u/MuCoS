@@ -27,14 +27,13 @@ def init_weights(m):
 
 
 class Ensemble(BertPreTrainedModel):
-    def __init__(self, modelA, modelB, config):
+    def __init__(self, modelA, modelB, modelC, config):
         super(Ensemble, self).__init__(config)
         self.sub_modules = nn.ModuleDict({
             "modelA": modelA,
-            "modelB": modelB
+            "modelB": modelB,
+            "modelC": modelC
         })
-        #self.modelA = modelA
-        #self.modelB = modelB
         self.classifier = RobertaClassificationHead(config)
         self.softmax = nn.Softmax(dim=1)
 
@@ -43,7 +42,9 @@ class Ensemble(BertPreTrainedModel):
                                         token_type_ids=token_type_ids)
         x2 = self.sub_modules["modelB"](input_ids=input_ids, attention_mask=attention_mask,
                                         token_type_ids=token_type_ids)
-        x = torch.cat((x1[0], x2[0]), dim=2)
+        x3 = self.sub_modules["modelC"](input_ids=input_ids, attention_mask=attention_mask,
+                                        token_type_ids=token_type_ids)
+        x = torch.cat((x1[0], x2[0], x3[0]), dim=2)
         logits = self.classifier(x)
         return logits
 
@@ -54,9 +55,9 @@ class RobertaClassificationHead(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(
-            config.hidden_size * 2, config.hidden_size * 2)
+            config.hidden_size * 3, config.hidden_size * 3)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
-        self.out_proj = nn.Linear(config.hidden_size * 2, config.num_labels)
+        self.out_proj = nn.Linear(config.hidden_size * 3, config.num_labels)
         torch.nn.init.xavier_uniform(self.dense.weight)
         torch.nn.init.xavier_uniform(self.out_proj.weight)
 
@@ -163,6 +164,8 @@ def main():
                         help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--pred_modelB_dir", default=None, type=str,
                         help='./codesearch/models/java/checkpoint-best')
+    parser.add_argument("--pred_modelC_dir", default=None, type=str,
+                        help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--pred_model_dir", default=None, type=str,
                         help='predict model dir')
     parser.add_argument("--test_result_dir", default='./results/java/0_batch_result.txt', type=str,
@@ -237,12 +240,14 @@ def main():
 
     modelA = model_class.from_pretrained(args.pred_modelA_dir)
     modelB = model_class.from_pretrained(args.pred_modelB_dir)
+    modelC = model_class.from_pretrained(args.pred_modelC_dir)
 
     # extract model without classifier
     modelA.classifier = nn.Sequential(*list(modelA.classifier.children())[:-3])
     modelB.classifier = nn.Sequential(*list(modelB.classifier.children())[:-3])
+    modelC.classifier = nn.Sequential(*list(modelC.classifier.children())[:-3])
 
-    model = Ensemble(modelA, modelB, config)
+    model = Ensemble(modelA, modelB, modelC, config)
     model_copy = copy.deepcopy(model)
     # model.apply(init_weights)
 

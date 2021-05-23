@@ -7,18 +7,18 @@ from transformers import (WEIGHTS_NAME, get_linear_schedule_with_warmup, AdamW,
                           RobertaForSequenceClassification,
                           RobertaTokenizer)
 from utils import processors
-from run_classifier import evaluate
+from run_classifier_new import evaluate
+from transformers.modeling_bert import BertPreTrainedModel
 
 MODEL_CLASSES = {'roberta': (
     RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer)}
 
 
 class Ensemble(nn.Module):
-    def __init__(self, modelA, modelB, modelC):
+    def __init__(self, modelA, modelB):
         super(Ensemble, self).__init__()
         self.modelA = modelA
         self.modelB = modelB
-        self.modelC = modelC
         self.classifier = nn.Linear(2, 2)
         self.softmax = nn.Softmax(dim=1)
 
@@ -27,16 +27,53 @@ class Ensemble(nn.Module):
                          token_type_ids=token_type_ids, labels=labels)
         x2 = self.modelB(input_ids=input_ids, attention_mask=attention_mask,
                          token_type_ids=token_type_ids, labels=labels)
-        x3 = self.modelB(input_ids=input_ids, attention_mask=attention_mask,
-                         token_type_ids=token_type_ids, labels=labels)
         # x = torch.cat((x1[0], x2[0]), dim=1)
-        loss = (x1[0] + x2[0] + x3[0]) / 3
-        l1 = self.softmax(x1[1])
-        l2 = self.softmax(x2[1])
-        l3 = self.softmax(x3[1])
-        x = (l1 + l2 + l3) / 3
-        return loss, x
+        l1 = self.softmax(x1)
+        l2 = self.softmax(x2)
+        x = (l1 + l2) / 2
+        return x
 
+class Ensemble3(BertPreTrainedModel):
+    def __init__(self, modelA, modelB, modelC, config):
+        super(Ensemble3, self).__init__(config)
+        self.sub_modules = nn.ModuleDict({
+            "modelA": modelA,
+            "modelB": modelB,
+            "modelC": modelC,
+        })
+        self.classifier = RobertaClassificationHead3(config)
+
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None, labels=None):
+        x1 = self.sub_modules["modelA"](input_ids=input_ids, attention_mask=attention_mask,
+                                        token_type_ids=token_type_ids)
+        x2 = self.sub_modules["modelB"](input_ids=input_ids, attention_mask=attention_mask,
+                                        token_type_ids=token_type_ids)
+        x3 = self.sub_modules["modelC"](input_ids=input_ids, attention_mask=attention_mask,
+                                        token_type_ids=token_type_ids)
+        x = torch.cat((x1[0], x2[0], x3[0]), dim=2)
+        logits = self.classifier(x)
+        return logits
+
+class RobertaClassificationHead3(nn.Module):
+    """Head for sentence-level classification tasks."""
+
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(
+            config.hidden_size * 3, config.hidden_size * 3)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.out_proj = nn.Linear(config.hidden_size * 3, config.num_labels)
+        torch.nn.init.xavier_uniform(self.dense.weight)
+        torch.nn.init.xavier_uniform(self.out_proj.weight)
+
+    def forward(self, features, **kwargs):
+        x = features[:, 0, :]  # take <s> token (equiv. to [CLS])
+        x = self.dropout(x)
+        x = self.dense(x)
+        x = torch.tanh(x)
+        x = self.dropout(x)
+        x = self.out_proj(x)
+        return x
 
 def main():
     parser = argparse.ArgumentParser()
@@ -131,7 +168,7 @@ def main():
                         help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--pred_modelB_dir", default=None, type=str,
                         help='./codesearch/models/java/checkpoint-best')
-    parser.add_argument("--pred_modelC_dir", default=None, type=str,
+    parser.add_argument("--pred_modelX_dir", default=None, type=str,
                         help='./codesearch/models/java/checkpoint-best')
     parser.add_argument("--test_result_dir", default='./results/java/0_batch_result.txt', type=str,
                         help='path to store test result')
@@ -143,7 +180,17 @@ def main():
     args.device = device
     args.output_mode = "classification"
 
+    args.task_name = args.task_name.lower()
+    if args.task_name not in processors:
+        raise ValueError("Task not found: %s" % (args.task_name))
+    processor = processors[args.task_name]()
+    args.output_mode = "classification"
+    label_list = processor.get_labels()
+    num_labels = len(label_list)
+
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
+    config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path,
+                                          num_labels=num_labels, finetuning_task=args.task_name)
 
     if args.tokenizer_name:
         tokenizer_name = args.tokenizer_name
@@ -152,11 +199,16 @@ def main():
     tokenizer = tokenizer_class.from_pretrained(
         tokenizer_name, do_lower_case=args.do_lower_case)
 
-    modelA = model_class.from_pretrained(args.pred_modelA_dir)
-    modelB = model_class.from_pretrained(args.pred_modelB_dir)
-    modelC = model_class.from_pretrained(args.pred_modelC_dir)
+    modelX = model_class.from_pretrained(args.pred_modelX_dir)
+    modelX.classifier = nn.Sequential(*list(modelX.classifier.children())[:-3])
 
-    model = Ensemble(modelA, modelB, modelC)
+    model1 = Ensemble3(modelX, modelX, modelX, config)
+
+    modelA = model_class.from_pretrained(args.pred_modelA_dir, model_copy=model1, ensemble=True)
+    modelB = model_class.from_pretrained(args.pred_modelB_dir, model_copy=model1, ensemble=True)
+    
+
+    model = Ensemble(modelA, modelB)
     model.to(device)
     evaluate(args, model, tokenizer,
              checkpoint=None, prefix='', mode='test')

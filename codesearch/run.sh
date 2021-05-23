@@ -8,7 +8,11 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
+<<<<<<< HEAD
 --train_file train_query1.txt \
+=======
+--train_file train_query0_.txt \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -18,7 +22,11 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
+<<<<<<< HEAD
 --output_dir ./models_seed1_query1/$lang  \
+=======
+--output_dir ./models_seed1_query0_/$lang  \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --model_name_or_path $pretrained_model \
 --seed 1 && 
 python run_classifier.py \
@@ -27,7 +35,11 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
+<<<<<<< HEAD
 --train_file train_query1.txt \
+=======
+--train_file train_query0_.txt \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -37,7 +49,11 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
+<<<<<<< HEAD
 --output_dir ./models_seed3_query1/$lang  \
+=======
+--output_dir ./models_seed3_query0_/$lang  \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --model_name_or_path $pretrained_model \
 --seed 3 &&
 python run_classifier.py \
@@ -46,7 +62,11 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
+<<<<<<< HEAD
 --train_file train_query1.txt \
+=======
+--train_file train_query0_.txt \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -56,7 +76,11 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
+<<<<<<< HEAD
 --output_dir ./models_seed5_query1/$lang  \
+=======
+--output_dir ./models_seed5_query0_/$lang  \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --model_name_or_path $pretrained_model \
 --seed 5 &&
 python run_classifier.py \
@@ -65,7 +89,11 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
+<<<<<<< HEAD
 --train_file train_query1.txt \
+=======
+--train_file train_query0_.txt \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -75,7 +103,11 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
+<<<<<<< HEAD
 --output_dir ./models_seed7_query1/$lang  \
+=======
+--output_dir ./models_seed7_query0_/$lang  \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --model_name_or_path $pretrained_model \
 --seed 7 &&
 python run_classifier.py \
@@ -84,7 +116,11 @@ python run_classifier.py \
 --do_train \
 --do_eval \
 --eval_all_checkpoints \
+<<<<<<< HEAD
 --train_file train_query1.txt \
+=======
+--train_file train_query0_.txt \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --dev_file valid.txt \
 --max_seq_length 200 \
 --per_gpu_train_batch_size 64 \
@@ -94,7 +130,11 @@ python run_classifier.py \
 --gradient_accumulation_steps 1 \
 --overwrite_output_dir \
 --data_dir ../data/codesearch/train_valid/$lang \
+<<<<<<< HEAD
 --output_dir ./models_seed11_query1/$lang  \
+=======
+--output_dir ./models_seed11_query0_/$lang  \
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 --model_name_or_path $pretrained_model \
 --seed 11
 
@@ -113,8 +153,13 @@ python run_classifier.py \
 --num_train_epochs 8 \
 --seed 1 \
 --test_file batch_${idx}.txt \
+<<<<<<< HEAD
 --pred_model_dir ./models_seed1_query1/$lang/checkpoint-best/ \
 --test_result_dir ./result_seed1_query1/$lang/${idx}_batch_result.txt  &&
+=======
+--pred_model_dir ./models_seed1_query0_/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed1_query0_/$lang/${idx}_batch_result.txt  &&
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -128,8 +173,13 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 8 \
 --test_file batch_${idx}.txt \
+<<<<<<< HEAD
 --pred_model_dir ./models_seed3_query1/$lang/checkpoint-best/ \
 --test_result_dir ./result_seed3_query1/$lang/${idx}_batch_result.txt &&
+=======
+--pred_model_dir ./models_seed3_query0_/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed3_query0_/$lang/${idx}_batch_result.txt &&
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -143,8 +193,13 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 8 \
 --test_file batch_${idx}.txt \
+<<<<<<< HEAD
 --pred_model_dir ./models_seed5_query1/$lang/checkpoint-best/ \
 --test_result_dir ./result_seed5_query1/$lang/${idx}_batch_result.txt &&
+=======
+--pred_model_dir ./models_seed5_query0_/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed5_query0_/$lang/${idx}_batch_result.txt &&
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -158,8 +213,13 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 8 \
 --test_file batch_${idx}.txt \
+<<<<<<< HEAD
 --pred_model_dir ./models_seed7_query1/$lang/checkpoint-best/ \
 --test_result_dir ./result_seed7_query1/$lang/${idx}_batch_result.txt &&
+=======
+--pred_model_dir ./models_seed7_query0_/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed7_query0_/$lang/${idx}_batch_result.txt &&
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 python run_classifier.py \
 --model_type roberta \
 --model_name_or_path microsoft/codebert-base \
@@ -173,8 +233,13 @@ python run_classifier.py \
 --learning_rate 1e-5 \
 --num_train_epochs 8 \
 --test_file batch_${idx}.txt \
+<<<<<<< HEAD
 --pred_model_dir ./models_seed11_query1/$lang/checkpoint-best/ \
 --test_result_dir ./result_seed11_query1/$lang/${idx}_batch_result.txt 
+=======
+--pred_model_dir ./models_seed11_query0_/$lang/checkpoint-best/ \
+--test_result_dir ./result_seed11_query0_/$lang/${idx}_batch_result.txt 
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
 
 # # do var
 # python run_classifier.py \
@@ -349,4 +414,8 @@ python run_classifier.py \
 # --num_train_epochs 8 \
 # --test_file batch_${idx}.txt \
 # --pred_model_dir ./models_seed11_var/$lang/checkpoint-best/ \
+<<<<<<< HEAD
 # --test_result_dir ./result_seed11_var/$lang/${idx}_batch_result.txt 
+=======
+# --test_result_dir ./result_seed11_var/$lang/${idx}_batch_result.txt 
+>>>>>>> a3da582c6a665320a0e5dc4bd2a32a1b85f63896
