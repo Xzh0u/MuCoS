@@ -9,9 +9,11 @@
 # python mrr.py --result_dir "./results_ensemble3_annotated_seed7/java" --test_batch_size 312
 # python mrr.py --result_dir "./results_ensemble3_annotated_seed11/java" --test_batch_size 312
 
-python mrr.py --result_dir "./results_ensemble6_all_seed1/java" 
-python mrr.py --result_dir "./results_ensemble6_all_seed3/java" 
-python mrr.py --result_dir "./results_ensemble6_all_seed5/java" 
+python mrr.py --result_dir "./results_ensemble3_code_all_seed1/java" 
+python mrr.py --result_dir "./results_ensemble3_code_all_seed3/java"
+python mrr.py --result_dir "./results_ensemble3_code_all_seed5/java"
+# python mrr.py --result_dir "./results_ensemble6_all_seed3/java" 
+# python mrr.py --result_dir "./results_ensemble6_all_seed5/java" 
 # python mrr.py --result_dir "./results_ensemble3_notrain_query_seed7/java" 
 # python mrr.py --result_dir "./results_ensemble3_notrain_query_seed11/java" 
 # python mrr.py --result_dir "./result_seed7_query0_/java" 
