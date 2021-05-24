@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_batch_size', type=int, default=312)
+    parser.add_argument('--test_batch_size', type=int, default=1000)
     parser.add_argument('--result_dir', type=str,
                         default="./results_ensemble3_annotated_seed1/java")
     parser.add_argument('--pic_name', type=str,
