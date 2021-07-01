@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_batch_size', type=int, default=1000)
     parser.add_argument('--result_dir', type=str,
-                        default="./results_ensemble3_annotated_seed1/java")
+                        default="./results_seed1/java")
     parser.add_argument('--pic_name', type=str,
                         default="ensemble")
     args = parser.parse_args()
@@ -45,12 +45,13 @@ def main():
         mean_frank = np.mean(np.array(valid_ranks10))
         std_frank = np.std(np.array(valid_ranks10))
         print("{} mrr: {}".format(language, mean_mrr))
-        print("{} SuccessRate@10: {}".format(language, len(valid_ranks10)/len(ranks)))
+        print("{} SuccessRate@10: {}".format(language,
+              len(valid_ranks10)/len(ranks)))
         print("{} SuccessRate@5: {}".format(language, len(valid_ranks5)/len(ranks)))
         print("{} SuccessRate@1: {}".format(language, len(valid_ranks1)/len(ranks)))
         print("{} frank avg: {}".format(language, mean_frank))
         print("{} ranks std: {}".format(language, std_frank))
-        fig = plt.hist(np.array(valid_ranks10))
+        # fig = plt.hist(np.array(valid_ranks10))
         # plt.savefig('pic/{}_distribution.png'.format(args.pic_name))
         # MRR_dict[language] = mean_mrr
     # for key, val in MRR_dict.items():

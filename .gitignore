@@ -140,3 +140,5 @@ src/pic
 output/
 result*/
 models*/
+src/code_not_open_source
+.history/

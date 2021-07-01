@@ -12,7 +12,7 @@ from transformers import (WEIGHTS_NAME, AdamW,
                           RobertaTokenizer)
 from transformers.modeling_bert import BertPreTrainedModel
 from utils import processors
-from run_classifier_new import evaluate, train, load_and_cache_examples, set_seed
+from run_classifier import evaluate, train, load_and_cache_examples, set_seed
 
 logger = logging.getLogger(__name__)
 

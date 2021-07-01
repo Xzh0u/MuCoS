@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ Finetuning the library models for sequence classification on GLUE (Bert, XLM, XLNet)."""
+# compute loss outside
 import argparse
 import glob
 import logging
 import os
 import random
+from torch.nn import CrossEntropyLoss, MSELoss
 
 
 import numpy as np
@@ -31,13 +33,109 @@ from tqdm import tqdm, trange
 
 from transformers import (WEIGHTS_NAME, get_linear_schedule_with_warmup, AdamW,
                           RobertaConfig,
-                          RobertaForSequenceClassification,
+                          # RobertaForSequenceClassification,
+                          BertPreTrainedModel,
                           RobertaTokenizer)
 
 from utils import (compute_metrics, convert_examples_to_features,
                    output_modes, processors)
 
 logger = logging.getLogger(__name__)
+
+ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP = {
+    "roberta-base": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-base-pytorch_model.bin",
+    "roberta-large": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-large-pytorch_model.bin",
+    "roberta-large-mnli": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-large-mnli-pytorch_model.bin",
+    "distilroberta-base": "https://s3.amazonaws.com/models.huggingface.co/bert/distilroberta-base-pytorch_model.bin",
+    "roberta-base-openai-detector": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-base-openai-detector-pytorch_model.bin",
+    "roberta-large-openai-detector": "https://s3.amazonaws.com/models.huggingface.co/bert/roberta-large-openai-detector-pytorch_model.bin",
+}
+
+
+class RobertaForSequenceClassification(BertPreTrainedModel):
+    config_class = RobertaConfig
+    pretrained_model_archive_map = ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP
+    base_model_prefix = "roberta"
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
+
+        self.roberta = RobertaModel(config)
+        self.classifier = RobertaClassificationHead(config)
+
+    def forward(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        token_type_ids=None,
+        position_ids=None,
+        head_mask=None,
+        inputs_embeds=None,
+        labels=None,
+    ):
+        r"""
+        labels (:obj:`torch.LongTensor` of shape :obj:`(batch_size,)`, `optional`, defaults to :obj:`None`):
+            Labels for computing the sequence classification/regression loss.
+            Indices should be in :obj:`[0, ..., config.num_labels - 1]`.
+            If :obj:`config.num_labels == 1` a regression loss is computed (Mean-Square loss),
+            If :obj:`config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+
+    Returns:
+        :obj:`tuple(torch.FloatTensor)` comprising various elements depending on the configuration (:class:`~transformers.RobertaConfig`) and inputs:
+        loss (:obj:`torch.FloatTensor` of shape :obj:`(1,)`, `optional`, returned when :obj:`label` is provided):
+            Classification (or regression if config.num_labels==1) loss.
+        logits (:obj:`torch.FloatTensor` of shape :obj:`(batch_size, config.num_labels)`):
+            Classification (or regression if config.num_labels==1) scores (before SoftMax).
+        hidden_states (:obj:`tuple(torch.FloatTensor)`, `optional`, returned when ``config.output_hidden_states=True``):
+            Tuple of :obj:`torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+            of shape :obj:`(batch_size, sequence_length, hidden_size)`.
+
+            Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+        attentions (:obj:`tuple(torch.FloatTensor)`, `optional`, returned when ``config.output_attentions=True``):
+            Tuple of :obj:`torch.FloatTensor` (one for each layer) of shape
+            :obj:`(batch_size, num_heads, sequence_length, sequence_length)`.
+
+            Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+            heads.
+
+    Examples::
+
+        from transformers import RobertaTokenizer, RobertaForSequenceClassification
+        import torch
+
+        tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+        model = RobertaForSequenceClassification.from_pretrained('roberta-base')
+        input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
+        labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+        outputs = model(input_ids, labels=labels)
+        loss, logits = outputs[:2]
+
+        """
+        outputs = self.roberta(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+        )
+        sequence_output = outputs[0]
+        logits = self.classifier(sequence_output)
+
+        outputs = (logits,) + outputs[2:]
+        # if labels is not None:
+        #     if self.num_labels == 1:
+        #         #  We are doing regression
+        #         loss_fct = MSELoss()
+        #         loss = loss_fct(logits.view(-1), labels.view(-1))
+        #     else:
+        #         loss_fct = CrossEntropyLoss()
+        #         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+        #     outputs = (loss,) + outputs
+
+        return outputs  # (loss), logits, (hidden_states), (attentions)
+
 
 MODEL_CLASSES = {'roberta': (
     RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer)}
@@ -101,7 +199,7 @@ def train(args, train_dataset, model, tokenizer, optimizer):
     train_iterator = trange(args.start_epoch, int(args.num_train_epochs), desc="Epoch",
                             disable=args.local_rank not in [-1, 0])
     # Added here for reproductibility (even between python 2 and 3)
-    set_seed(args)
+    # set_seed(args)
     model.train()
     for idx, _ in enumerate(train_iterator):
         tr_loss = 0.0
@@ -113,9 +211,19 @@ def train(args, train_dataset, model, tokenizer, optimizer):
                       'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet'] else None,
                       # XLM don't use segment_ids
                       'labels': batch[3]}
-            ouputs = model(**inputs)
+            logits = model(**inputs)
+            labels = batch[3]
+            num_labels = 2  # bad way
+            if labels is not None:
+                if num_labels == 1:
+                    #  We are doing regression
+                    loss_fct = MSELoss()
+                    loss = loss_fct(logits.view(-1), labels.view(-1))
+                else:
+                    loss_fct = CrossEntropyLoss()
+                    loss = loss_fct(
+                        logits.view(-1, num_labels), labels.view(-1))
             # model outputs are always tuple in pytorch-transformers (see doc)
-            loss = ouputs[0]
 
             if args.n_gpu > 1:
                 loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -149,7 +257,7 @@ def train(args, train_dataset, model, tokenizer, optimizer):
                     # Only evaluate when single GPU otherwise metrics may not average well
                     if args.local_rank == -1 and args.evaluate_during_training:
                         results = evaluate(
-                            args, model, tokenizer, checkpoint=str(global_step))
+                            args, model, tokenizer, checkpoint=str(global_step), is_train=True)
                         for key, value in results.items():
                             tb_writer.add_scalar(
                                 'eval_{}'.format(key), value, global_step)
@@ -267,11 +375,24 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
                           'token_type_ids': batch[2] if args.model_type in ['bert', 'xlnet'] else None,
                           # XLM don't use segment_ids
                           'labels': batch[3]}
-                # TODO: change!!!
-                outputs = model(**inputs)
-                tmp_eval_loss, logits = outputs[:2]
-                # tmp_eval_loss, logits = model(**inputs)
 
+                # outputs = model(**inputs)
+                # tmp_eval_loss, logits = outputs[:2]
+                labels = batch[3]
+                logits = model(**inputs)
+                if type(logits) == tuple:
+                    logits = logits[0]
+                num_labels = 2  # bad way
+                if labels is not None:
+                    if num_labels == 1:
+                        #  We are doing regression
+                        loss_fct = MSELoss()
+                        tmp_eval_loss = loss_fct(
+                            logits.view(-1), labels.view(-1))
+                    else:
+                        loss_fct = CrossEntropyLoss()
+                        tmp_eval_loss = loss_fct(
+                            logits.view(-1, num_labels), labels.view(-1))
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
             if preds is None:
@@ -306,7 +427,6 @@ def evaluate(args, model, tokenizer, checkpoint=None, prefix="", mode='dev'):
             with open(output_test_file, "w") as writer:
                 logger.info("***** Output test results *****")
                 all_logits = preds.tolist()
-                print("all_logits", len(all_logits))
                 for i, logit in tqdm(enumerate(all_logits), desc='Testing'):
                     instance_rep = '<CODESPLIT>'.join(
                         [item.encode('ascii', 'ignore').decode('ascii') for item in instances[i]])
@@ -399,7 +519,7 @@ def main():
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     parser.add_argument("--model_type", default=None, type=str, required=True,
                         help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
-    parser.add_argument("--model_name_or_path", default=None, type=str, required=True,
+    parser.add_argument("--model_name_or_path", default="microsoft/codebert-base", type=str, required=True,
                         help="Path to pre-trained model or shortcut name")
     parser.add_argument("--task_name", default='codesearch', type=str, required=True,
                         help="The name of the task to train selected in the list: " + ", ".join(processors.keys()))
