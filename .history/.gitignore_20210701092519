@@ -130,13 +130,13 @@ dmypy.json
 
 # data
 data/
-TEMP/
-runs/
 src/models
 src/basic_models
-src/runs
+TEMP/
+runs/
+src/runs/
 src/save_results
-src/pic
+scr/pic/
 output/
 result*/
 models*/
