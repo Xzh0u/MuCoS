@@ -8,16 +8,17 @@ import torch.nn.functional as F
 from torch import nn
 from transformers import (WEIGHTS_NAME, AdamW,
                           RobertaConfig,
-                          RobertaForSequenceClassification,
+                          #   RobertaForSequenceClassification,
                           RobertaTokenizer)
 from transformers.modeling_bert import BertPreTrainedModel
+from modeling_utils import RobertaForSequenceClassificationNew
 from utils import processors
 from run_classifier import evaluate, train, load_and_cache_examples, set_seed
 
 logger = logging.getLogger(__name__)
 
 MODEL_CLASSES = {'roberta': (
-    RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer)}
+    RobertaConfig, RobertaForSequenceClassificationNew, RobertaTokenizer)}
 
 
 def init_weights(m):
