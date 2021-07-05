@@ -1,9 +1,11 @@
 import pickle
 import random
 
+'''use permute statement as en example'''
+
 
 def main():
-    data = pickle.load(open("data/train.all_augmented_data.pkl", 'rb'))
+    data = pickle.load(open("data/train.adv_data.pkl", 'rb'))
 
     url = []
     method_name = []

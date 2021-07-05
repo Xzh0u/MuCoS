@@ -270,7 +270,7 @@ def main():
     # 3. add adverarial data
     data = add_adv_data(train_data)
     # 4. save
-    write_pickle(data, "train.adv_data.pkl")
+    write_pickle(data, "data/train.adv_data.pkl")
 
 
 if __name__ == "__main__":
