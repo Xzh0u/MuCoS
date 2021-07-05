@@ -6,19 +6,44 @@ This repo provides the code for reproducing the experiments in MuCoS: Is a Singl
 
 - pip install torch==1.4.0
 - pip install transformers==2.5.0
-- pip install filelock more_itertools
-- pip install tensorboardX scikit-learn matplotlib
+- pip install javalang nltk numpy h5py # data process
+- pip install filelock more_itertools tensorboardX scikit-learn matplotlib # run MuCoS
 
 ## Code Search
 
 ### Data Generation
+The example CodeSearchNet data for the process is `csn.pkl`(this is available in ./).
+Then we generate adversarial data using `generate_adversarial_datasets.py`, this file call a jar package in https://github.com/mdrafiqulrabin/tnpa-framework#1-variable-renaming to process the origin data and do 6 types of program transformation, then save the data to `data/output/<transform_type>/<filename>`. 
+We use `save_dataset.py` to read all augmented data and add to origin CodeSearchNet data, then parse the api, tokens and method name, and save all these data to `valid.adv_data.pkl` and `train.all_augmented_data.pkl`. 
 
-To be finished.
+
+### Step 1: generate data
+```python
+python generate_adversarial_datasets.py
+```
+The output will be the same as in output/ of this repo.
+
+### Step 2: parse and save augmented and origin data 
+all augmented data into origin data, and parse origin and augmented data, save to a new pickle file
+```python
+python save_dataset.py
+```
+test data is saved to `test_train.adv_data.pkl`.
+
+### Step 3: run scripts to build different dataset for each baseline
+- put `valid.adv_data.pkl`(in directory root) to `data/valid.adv_data.pkl`
+- put `train.all_augmented_data.pkl` to `data/train.all_augmented_data.pkl`
+
+```python
+# YOU SHOULD CHANGE DATA PATH BEFORE RUNNING!!!
+python transform2codebert.py
+
+```
 
 ### Fine-Tune
 
 ```shell
-cd TODO:
+cd src
 
 lang=java #fine-tuning a language-specific model for each programming language
 pretrained_model=microsoft/codebert-base  #Roberta: roberta-base
