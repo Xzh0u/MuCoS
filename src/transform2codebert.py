@@ -1,11 +1,23 @@
 import pickle
 import random
-
+import argparse
 '''use permute statement as en example'''
 
 
 def main():
-    data = pickle.load(open("data/train.adv_data.pkl", 'rb'))
+    parser = argparse.ArgumentParser()
+
+    # Required parameters
+    # parser.add_argument("--data_dir", default="../data/train.adv_data.pkl", type=str, required=True,
+    #                     help="The input data dir.")
+    parser.add_argument("--code_type", default="origin", type=str,
+                        help="The output directory where the model predictions and checkpoints will be written.")
+    parser.add_argument("--data_split", default="train", type=str,
+                        help="Pretrained config name or path if not the same as model_name")
+
+    args = parser.parse_args()
+
+    data = pickle.load(open(f"../data/{args.data_split}.adv_data.pkl", 'rb'))
 
     url = []
     method_name = []
@@ -24,12 +36,25 @@ def main():
         desc.append(item['docstring'].replace('\n', ''))
         code.append(item['code'].replace('\n', '').replace(
             '\r', '').replace('    ', ''))
-        if "permute_statement" in item.keys():
+        if args.code_type == "origin":
             adv_url.append(item['url'])
             adv_method_name.append(item['method_name'])
             adv_desc.append(item['docstring'].replace('\n', ''))
-            adv_code.append(item["permute_statement"][0]['code'].replace(
+            adv_code.append(item['code'].replace(
                 '\n', '').replace('\r', '').replace('    ', ''))
+        elif args.code_type in item.keys():
+            if args.code_type == "replace_all":
+                adv_url.append(item['url'])
+                adv_method_name.append(item['method_name'])
+                adv_desc.append(item['docstring'].replace('\n', ''))
+                adv_code.append(item[args.code_type]['code'].replace(
+                    '\n', '').replace('\r', '').replace('    ', ''))
+            elif args.code_type == "permute_statement":
+                adv_url.append(item['url'])
+                adv_method_name.append(item['method_name'])
+                adv_desc.append(item['docstring'].replace('\n', ''))
+                adv_code.append(item[args.code_type][0]['code'].replace(
+                    '\n', '').replace('\r', '').replace('    ', ''))
 
     print(len(adv_code))
     for i in range(len(code) - 2):
@@ -54,7 +79,7 @@ def main():
 
     print(len(lines))
     random.shuffle(lines)
-    with open('train_permute_statement_full.txt', 'w') as f:
+    with open(f'../data/{args.data_split}_{args.code_type}.txt', 'w') as f:
         for item in lines:
             f.write("%s\n" % item)
 

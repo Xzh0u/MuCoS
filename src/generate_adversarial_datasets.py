@@ -7,7 +7,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Required parameters
-    parser.add_argument("--data_dir", default="csn.pkl", type=str, required=False,
+    parser.add_argument("--data_dir", default="../data/csn.pkl", type=str, required=False,
                         help="origin data dir.")
     parser.add_argument("--output_dir", default="output/", type=str, required=False,
                         help="output dir of augmented data.")

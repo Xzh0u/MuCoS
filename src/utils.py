@@ -65,10 +65,10 @@ def split_(identifier):  # still have some variable separated by _
 
 
 def remove_stop_and_key_words(valuables):
-    with open('data/stop_words.txt', 'r') as file:
+    with open('../data/stop_words.txt', 'r') as file:
         stop_words = file.read().split('\n')
 
-    with open('data/java_keywords.txt', 'r') as file:
+    with open('../data/java_keywords.txt', 'r') as file:
         key_words = file.read().split('\n')
 
     remove_list = stop_words + key_words
@@ -79,10 +79,10 @@ def remove_stop_and_key_words(valuables):
 
 
 def remove_stop_and_key_words(valuables):
-    with open('data/stop_words.txt', 'r') as file:
+    with open('../data/stop_words.txt', 'r') as file:
         stop_words = file.read().split('\n')
 
-    with open('data/java_keywords.txt', 'r') as file:
+    with open('../data/java_keywords.txt', 'r') as file:
         key_words = file.read().split('\n')
 
     remove_list = stop_words + key_words
@@ -115,7 +115,7 @@ def build_vocab(content: List[List], vocab_type, length) -> Dict:
     special_tokens = {"<pad>": 0, "<s>": 1, "</s>": 2, "<unk>": 3}
     vocab_dict = dict(zip(vocab_list, [x for x in range(4, length)]))
 
-    with open(f'save/vocab.{vocab_type}.json', 'w') as f:
+    with open(f'../data/vocab.{vocab_type}.json', 'w') as f:
         json.dump({**special_tokens, **vocab_dict}, f)
 
     return vocab_dict

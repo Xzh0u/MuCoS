@@ -159,7 +159,7 @@ def main():
                         help="train file")
     parser.add_argument("--dev_file", default="valid.txt", type=str,
                         help="dev file")
-    parser.add_argument("--test_file", default="batch_0.txt", type=str,
+    parser.add_argument("--test_file", default="test.txt", type=str,
                         help="test file")
     parser.add_argument("--pred_modelA_dir", default=None, type=str,
                         help='./codesearch/models/java/checkpoint-best')
