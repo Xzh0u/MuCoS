@@ -129,16 +129,13 @@ dmypy.json
 .pyre/
 
 # data
-data/
-TEMP/
-runs/
-src/models
-src/basic_models
-src/runs
-src/save_results
-src/pic
 output/
-result*/
-models*/
-src/code_not_open_source
-.history/
+cached_*
+models_*
+tmp/
+.vscode/
+*.pkl
+train*.txt
+val*.txt
+test*.txt
+results/
